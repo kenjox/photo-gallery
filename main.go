@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
 )
 
 func homePage(w http.ResponseWriter, r *http.Request) {
@@ -21,30 +23,19 @@ func registerPage(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "<h1>register page</h1>")
 }
 
-/**
-	Creating custom router which implements ServeHTTP(ResponseWriter, *Request)
-	since ListenAndServe
-**/
-
-type Router struct{}
-
-func (router Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	switch r.URL.Path {
-	case "/":
-		homePage(w, r)
-	case "/contact":
-		contactPage(w, r)
-	case "/login":
-		loginPage(w, r)
-	case "/register":
-		registerPage(w, r)
-	default:
-		http.Error(w, "Page not found", http.StatusNotFound)
-	}
+func notFoundPage(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "<h1>Page not found</h1>")
 }
 
 func main() {
-	var router Router
+	r := chi.NewRouter()
+
+	r.Get("/", homePage)
+	r.Get("/contact", contactPage)
+	r.Get("/register", registerPage)
+	r.Get("/login", loginPage)
+	r.NotFound(notFoundPage)
+
 	fmt.Println("Server running on port 9000")
-	http.ListenAndServe(":9000", router)
+	http.ListenAndServe(":9000", r)
 }
