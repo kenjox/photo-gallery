@@ -2,62 +2,44 @@ package main
 
 import (
 	"fmt"
-	"html/template"
 	"log"
 	"net/http"
-	"path/filepath"
-	"strings"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/kenjox/photo-gallery/views"
 )
 
-// getPageName get the name of the file without extension e.g home.gohtml ==> home
-func getPageName(file string) string {
-	return strings.Split(file, ".")[0]
-}
-
 // loadTemplate loads the template using the file name
-func loadTemplate(w http.ResponseWriter, templateName string) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-	file := filepath.Join("templates", templateName)
-	tpl, err := template.ParseFiles(file)
+func loadTemplate(w http.ResponseWriter, filePath string) {
+	tpl, err := views.Parse(filePath)
 
 	if err != nil {
-		log.Printf("Error parsing %v", err)
-		pageName := fmt.Sprintf("Error loading %s page", getPageName(templateName))
-		http.Error(w, pageName, http.StatusInternalServerError)
+		log.Printf("error occurred loading %v", err)
+		http.Error(w, "unable to load the template", http.StatusInternalServerError)
 		return
 	}
 
-	err = tpl.Execute(w, nil)
-
-	if err != nil {
-		log.Printf("Error executing %v", err)
-		pageName := fmt.Sprintf("Error loading %s page", getPageName(templateName))
-		http.Error(w, pageName, http.StatusInternalServerError)
-		return
-	}
+	tpl.Execute(w, nil)
 }
 
 func homePage(w http.ResponseWriter, r *http.Request) {
-	loadTemplate(w, "home.gohtml")
+	loadTemplate(w, "templates/home.gohtml")
 }
 
 func contactPage(w http.ResponseWriter, r *http.Request) {
-	loadTemplate(w, "contact.gohtml")
+	loadTemplate(w, "templates/contact.gohtml")
 }
 
 func loginPage(w http.ResponseWriter, r *http.Request) {
-	loadTemplate(w, "login.gohtml")
+	loadTemplate(w, "templates/login.gohtml")
 }
 
 func registerPage(w http.ResponseWriter, r *http.Request) {
-	loadTemplate(w, "register.gohtml")
+	loadTemplate(w, "templates/register.gohtml")
 }
 
 func notFoundPage(w http.ResponseWriter, r *http.Request) {
-	loadTemplate(w, "404.gohtml")
+	loadTemplate(w, "templates/404.gohtml")
 }
 
 func main() {
